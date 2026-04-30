@@ -1,0 +1,1517 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Análisis Organizacional — Valve Corporation / Steam</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;500;600&display=swap');
+
+  :root {
+    --blue-dark: #0B1F3A;
+    --blue-mid: #0d2a4f;
+    --blue-bright: #3DA0FF;
+    --blue-glow: #1e6fc4;
+    --red-valve: #C7263E;
+    --red-glow: #ff3355;
+    --white: #e8f4ff;
+    --gray: #8dafc8;
+    --panel-bg: rgba(13, 42, 79, 0.7);
+    --border: rgba(61, 160, 255, 0.3);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--blue-dark);
+    color: var(--white);
+    font-family: 'Inter', sans-serif;
+    overflow-x: hidden;
+  }
+
+  /* ── PARTICLES CANVAS ── */
+  #particles-canvas {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    z-index: 0;
+    pointer-events: none;
+  }
+
+  /* ── NAV ── */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    background: rgba(11, 31, 58, 0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 2rem;
+    height: 56px;
+  }
+
+  .nav-logo {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--blue-bright);
+    text-shadow: 0 0 12px rgba(61,160,255,0.7);
+    letter-spacing: 2px;
+  }
+
+  .nav-links {
+    display: flex;
+    gap: 0.2rem;
+    list-style: none;
+  }
+
+  .nav-links a {
+    color: var(--gray);
+    text-decoration: none;
+    font-size: 0.72rem;
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 0.3rem 0.7rem;
+    border-radius: 4px;
+    transition: all 0.25s;
+    border: 1px solid transparent;
+  }
+
+  .nav-links a:hover, .nav-links a.active {
+    color: var(--blue-bright);
+    border-color: var(--border);
+    text-shadow: 0 0 8px rgba(61,160,255,0.6);
+    background: rgba(61,160,255,0.05);
+  }
+
+  /* ── SECTIONS ── */
+  section {
+    position: relative;
+    z-index: 1;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 80px 2rem 4rem;
+  }
+
+  .section-inner {
+    max-width: 1100px;
+    width: 100%;
+  }
+
+  /* ── COVER ── */
+  #cover {
+    background: radial-gradient(ellipse at 60% 40%, rgba(61,160,255,0.08) 0%, transparent 70%),
+                radial-gradient(ellipse at 20% 80%, rgba(199,38,62,0.06) 0%, transparent 60%);
+    text-align: center;
+  }
+
+  .cover-eyebrow {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 0.8rem;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--red-valve);
+    margin-bottom: 1.5rem;
+    opacity: 0;
+    animation: fadeSlideUp 0.8s 0.3s forwards;
+  }
+
+  .cover-title {
+    font-family: 'Orbitron', sans-serif;
+    font-size: clamp(2.8rem, 7vw, 5.5rem);
+    font-weight: 900;
+    line-height: 1.05;
+    background: linear-gradient(135deg, #fff 0%, var(--blue-bright) 60%, #7dc8ff 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    filter: drop-shadow(0 0 30px rgba(61,160,255,0.4));
+    opacity: 0;
+    animation: fadeSlideUp 0.9s 0.5s forwards;
+  }
+
+  .cover-sub {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 1.4rem;
+    font-weight: 500;
+    color: var(--gray);
+    margin: 1.2rem 0 2.5rem;
+    letter-spacing: 2px;
+    opacity: 0;
+    animation: fadeSlideUp 0.9s 0.7s forwards;
+  }
+
+  .cover-badges {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+    opacity: 0;
+    animation: fadeSlideUp 0.9s 0.9s forwards;
+  }
+
+  .badge {
+    padding: 0.5rem 1.3rem;
+    border: 1px solid var(--border);
+    border-radius: 30px;
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--blue-bright);
+    background: rgba(61,160,255,0.06);
+    cursor: default;
+    transition: all 0.3s;
+  }
+
+  .badge:hover {
+    background: rgba(61,160,255,0.15);
+    box-shadow: 0 0 16px rgba(61,160,255,0.3);
+    transform: translateY(-2px);
+  }
+
+  .scroll-hint {
+    position: absolute;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    opacity: 0;
+    animation: fadeIn 1s 1.5s forwards;
+  }
+
+  .scroll-hint span {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 0.7rem;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--gray);
+  }
+
+  .scroll-arrow {
+    width: 20px;
+    height: 20px;
+    border-right: 2px solid var(--blue-bright);
+    border-bottom: 2px solid var(--blue-bright);
+    transform: rotate(45deg);
+    animation: bounce 1.5s infinite;
+    box-shadow: 0 0 8px rgba(61,160,255,0.4);
+  }
+
+  /* ── SECTION HEADERS ── */
+  .sec-label {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 0.72rem;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--red-valve);
+    margin-bottom: 0.6rem;
+  }
+
+  .sec-title {
+    font-family: 'Orbitron', sans-serif;
+    font-size: clamp(1.6rem, 3.5vw, 2.5rem);
+    font-weight: 700;
+    color: var(--white);
+    text-shadow: 0 0 20px rgba(61,160,255,0.3);
+    margin-bottom: 2rem;
+    line-height: 1.2;
+  }
+
+  .sec-title span {
+    color: var(--blue-bright);
+    text-shadow: 0 0 20px rgba(61,160,255,0.6);
+  }
+
+  /* ── CARDS / PANELS ── */
+  .glass-card {
+    background: var(--panel-bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.8rem;
+    backdrop-filter: blur(8px);
+    transition: all 0.35s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .glass-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--blue-bright), transparent);
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+
+  .glass-card:hover {
+    border-color: rgba(61,160,255,0.55);
+    box-shadow: 0 8px 32px rgba(61,160,255,0.12), inset 0 0 20px rgba(61,160,255,0.03);
+    transform: translateY(-3px);
+  }
+
+  .glass-card:hover::before { opacity: 1; }
+
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.2rem; }
+
+  @media (max-width: 768px) {
+    .grid-2, .grid-3 { grid-template-columns: 1fr; }
+    nav { padding: 0 1rem; }
+    .nav-links { display: none; }
+  }
+
+  /* ── STATS ── */
+  .stat-number {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 2.2rem;
+    font-weight: 900;
+    color: var(--blue-bright);
+    text-shadow: 0 0 20px rgba(61,160,255,0.5);
+    display: block;
+  }
+
+  .stat-label {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 0.85rem;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--gray);
+    margin-top: 0.3rem;
+    display: block;
+  }
+
+  /* ── TABLE ── */
+  .data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.88rem;
+  }
+
+  .data-table th {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 0.75rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--blue-bright);
+    padding: 0.8rem 1rem;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .data-table td {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid rgba(61,160,255,0.08);
+    color: var(--white);
+    vertical-align: top;
+  }
+
+  .data-table tr:hover td {
+    background: rgba(61,160,255,0.04);
+  }
+
+  .data-table tr.highlight td {
+    background: rgba(61,160,255,0.08);
+    color: var(--blue-bright);
+    font-weight: 600;
+  }
+
+  /* ── PESTEL ── */
+  .pestel-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+  }
+
+  @media (max-width: 900px) {
+    .pestel-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  @media (max-width: 600px) {
+    .pestel-grid { grid-template-columns: 1fr; }
+  }
+
+  .pestel-card {
+    background: var(--panel-bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1.4rem;
+    cursor: pointer;
+    transition: all 0.3s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .pestel-card::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at 50% 0%, rgba(61,160,255,0.08), transparent 70%);
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+
+  .pestel-card:hover {
+    transform: translateY(-4px);
+    border-color: rgba(61,160,255,0.5);
+    box-shadow: 0 12px 30px rgba(61,160,255,0.15);
+  }
+
+  .pestel-card:hover::after { opacity: 1; }
+
+  .pestel-letter {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 2rem;
+    font-weight: 900;
+    color: var(--blue-bright);
+    text-shadow: 0 0 16px rgba(61,160,255,0.6);
+    line-height: 1;
+  }
+
+  .pestel-name {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 0.75rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--gray);
+    margin: 0.3rem 0 0.8rem;
+  }
+
+  .pestel-text {
+    font-size: 0.82rem;
+    line-height: 1.6;
+    color: rgba(232,244,255,0.8);
+  }
+
+  /* ── PERSONA ── */
+  .persona-card {
+    background: var(--panel-bg);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+  }
+
+  .persona-header {
+    background: linear-gradient(135deg, rgba(61,160,255,0.2), rgba(199,38,62,0.1));
+    padding: 2rem;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+  }
+
+  .persona-avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--blue-glow), var(--blue-bright));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1.8rem;
+    font-weight: 900;
+    color: #fff;
+    box-shadow: 0 0 24px rgba(61,160,255,0.5);
+    flex-shrink: 0;
+  }
+
+  .persona-name-block h3 {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--white);
+  }
+
+  .persona-name-block p {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 0.8rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--blue-bright);
+    margin-top: 0.3rem;
+  }
+
+  .persona-body {
+    padding: 2rem;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+  }
+
+  @media (max-width: 650px) {
+    .persona-body { grid-template-columns: 1fr; }
+    .persona-header { flex-direction: column; text-align: center; }
+  }
+
+  .persona-row {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+  }
+
+  .persona-row label {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 0.7rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--red-valve);
+  }
+
+  .persona-row span {
+    font-size: 0.88rem;
+    color: rgba(232,244,255,0.85);
+    line-height: 1.5;
+  }
+
+  /* ── CHART CONTAINERS ── */
+  .chart-wrap {
+    position: relative;
+    padding: 1.5rem;
+    background: var(--panel-bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+  }
+
+  .chart-title {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 0.8rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--blue-bright);
+    margin-bottom: 1rem;
+  }
+
+  /* ── BULLET LIST ── */
+  .styled-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+  }
+
+  .styled-list li {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    font-size: 0.9rem;
+    line-height: 1.55;
+    color: rgba(232,244,255,0.85);
+  }
+
+  .styled-list li::before {
+    content: '▸';
+    color: var(--blue-bright);
+    font-size: 0.75rem;
+    margin-top: 0.2rem;
+    flex-shrink: 0;
+    text-shadow: 0 0 8px rgba(61,160,255,0.6);
+  }
+
+  /* ── CONCLUSION CARDS ── */
+  .conclusion-card {
+    background: var(--panel-bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.5rem;
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+    transition: all 0.3s;
+  }
+
+  .conclusion-card:hover {
+    border-color: rgba(61,160,255,0.5);
+    transform: translateX(4px);
+  }
+
+  .conclusion-num {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1.6rem;
+    font-weight: 900;
+    color: var(--blue-bright);
+    opacity: 0.4;
+    line-height: 1;
+    flex-shrink: 0;
+  }
+
+  .conclusion-text h4 {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--white);
+    margin-bottom: 0.4rem;
+  }
+
+  .conclusion-text p {
+    font-size: 0.86rem;
+    line-height: 1.6;
+    color: rgba(232,244,255,0.75);
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    position: relative;
+    z-index: 1;
+    text-align: center;
+    padding: 2rem;
+    border-top: 1px solid var(--border);
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 0.75rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--gray);
+  }
+
+  /* ── DIVIDER ── */
+  .divider {
+    width: 60px;
+    height: 2px;
+    background: linear-gradient(90deg, var(--blue-bright), transparent);
+    margin: 1rem 0 2rem;
+    box-shadow: 0 0 8px rgba(61,160,255,0.4);
+  }
+
+  /* ── TAG ── */
+  .tag {
+    display: inline-block;
+    padding: 0.25rem 0.6rem;
+    background: rgba(61,160,255,0.1);
+    border: 1px solid rgba(61,160,255,0.25);
+    border-radius: 4px;
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 0.72rem;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--blue-bright);
+    margin: 0.15rem;
+  }
+
+  .tag.red {
+    background: rgba(199,38,62,0.1);
+    border-color: rgba(199,38,62,0.25);
+    color: #ff6b84;
+  }
+
+  /* ── SCROLL REVEAL ── */
+  .reveal {
+    opacity: 0;
+    transform: translateY(28px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+  }
+
+  .reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .reveal-delay-1 { transition-delay: 0.1s; }
+  .reveal-delay-2 { transition-delay: 0.2s; }
+  .reveal-delay-3 { transition-delay: 0.3s; }
+  .reveal-delay-4 { transition-delay: 0.4s; }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeSlideUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  @keyframes bounce {
+    0%, 100% { transform: rotate(45deg) translateY(0); }
+    50% { transform: rotate(45deg) translateY(6px); }
+  }
+
+  @keyframes pulse-glow {
+    0%, 100% { box-shadow: 0 0 20px rgba(61,160,255,0.2); }
+    50% { box-shadow: 0 0 36px rgba(61,160,255,0.45); }
+  }
+
+  .glow-pulse { animation: pulse-glow 3s ease-in-out infinite; }
+
+  /* ── SCANLINE OVERLAY ── */
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0,0,0,0.03) 2px,
+      rgba(0,0,0,0.03) 4px
+    );
+    pointer-events: none;
+    z-index: 200;
+  }
+
+  /* ── INTRO SECTION ── */
+  #intro { background: radial-gradient(ellipse at 80% 50%, rgba(61,160,255,0.05) 0%, transparent 60%); }
+
+  /* ── COUNTER ── */
+  .counter-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
+
+  @media (max-width: 650px) {
+    .counter-row { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  .counter-card {
+    background: var(--panel-bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1.4rem 1rem;
+    text-align: center;
+    transition: all 0.3s;
+  }
+
+  .counter-card:hover {
+    border-color: rgba(61,160,255,0.5);
+    box-shadow: 0 0 20px rgba(61,160,255,0.12);
+  }
+
+  /* ── PORTFOLIO BLOCKS ── */
+  .portfolio-block {
+    border-left: 3px solid var(--blue-bright);
+    padding: 0.8rem 1.2rem;
+    background: rgba(61,160,255,0.04);
+    border-radius: 0 8px 8px 0;
+    margin-bottom: 0.8rem;
+    transition: all 0.3s;
+  }
+
+  .portfolio-block:hover {
+    background: rgba(61,160,255,0.08);
+    border-left-color: #7dc8ff;
+  }
+
+  .portfolio-block h4 {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--blue-bright);
+    margin-bottom: 0.3rem;
+  }
+
+  .portfolio-block p {
+    font-size: 0.83rem;
+    line-height: 1.55;
+    color: rgba(232,244,255,0.78);
+  }
+
+  /* ── MODEL REVENUE ── */
+  .revenue-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid rgba(61,160,255,0.08);
+  }
+
+  .revenue-item:last-child { border-bottom: none; }
+
+  .revenue-item .label {
+    font-size: 0.86rem;
+    color: rgba(232,244,255,0.8);
+  }
+
+  .revenue-item .value {
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 700;
+    color: var(--blue-bright);
+    font-size: 0.9rem;
+  }
+
+  /* ── BAR FILL ── */
+  .bar-fill-wrap {
+    margin-top: 0.4rem;
+  }
+
+  .bar-fill-track {
+    height: 4px;
+    background: rgba(61,160,255,0.1);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .bar-fill-inner {
+    height: 100%;
+    border-radius: 2px;
+    background: linear-gradient(90deg, var(--blue-glow), var(--blue-bright));
+    box-shadow: 0 0 6px rgba(61,160,255,0.4);
+    width: 0;
+    transition: width 1.2s ease;
+  }
+</style>
+</head>
+<body>
+
+<canvas id="particles-canvas"></canvas>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">VALVE / STEAM</div>
+  <ul class="nav-links">
+    <li><a href="#cover" class="active">Inicio</a></li>
+    <li><a href="#intro">Empresa</a></li>
+    <li><a href="#mercado">Mercado</a></li>
+    <li><a href="#precios">Precios</a></li>
+    <li><a href="#pestel">PESTEL</a></li>
+    <li><a href="#persona">Buyer Persona</a></li>
+    <li><a href="#conclusiones">Conclusiones</a></li>
+  </ul>
+</nav>
+
+<!-- ══════════════════ COVER ══════════════════ -->
+<section id="cover">
+  <div class="section-inner" style="text-align:center;">
+    <p class="cover-eyebrow">Primera Entrega · Análisis Organizacional</p>
+    <h1 class="cover-title">VALVE<br>CORPORATION</h1>
+    <p class="cover-sub">Estructura · Entorno · Mercado · PESTEL · Buyer Persona</p>
+    <div class="cover-badges">
+      <span class="badge">Steam Platform</span>
+      <span class="badge">PC Gaming</span>
+      <span class="badge">Distribución Digital</span>
+      <span class="badge">Hardware</span>
+      <span class="badge">LATAM</span>
+    </div>
+  </div>
+  <div class="scroll-hint">
+    <span>Scroll</span>
+    <div class="scroll-arrow"></div>
+  </div>
+</section>
+
+<!-- ══════════════════ INTRO / EMPRESA ══════════════════ -->
+<section id="intro">
+  <div class="section-inner">
+    <p class="sec-label reveal">01 — Presentación</p>
+    <h2 class="sec-title reveal reveal-delay-1">La empresa detrás de <span>Steam</span></h2>
+    <div class="divider reveal reveal-delay-2"></div>
+
+    <!-- Counters -->
+    <div class="counter-row reveal reveal-delay-2">
+      <div class="counter-card glow-pulse">
+        <span class="stat-number" data-target="1996">0</span>
+        <span class="stat-label">Año de fundación</span>
+      </div>
+      <div class="counter-card">
+        <span class="stat-number" data-target="400" data-suffix="+">0</span>
+        <span class="stat-label">Empleados (aprox.)</span>
+      </div>
+      <div class="counter-card">
+        <span class="stat-number" data-prefix="$" data-target="5" data-suffix="B+">0</span>
+        <span class="stat-label">Ingresos anuales est. USD</span>
+      </div>
+      <div class="counter-card">
+        <span class="stat-number" data-target="132" data-suffix="M">0</span>
+        <span class="stat-label">Cuentas activas mensuales</span>
+      </div>
+    </div>
+
+    <div class="grid-2 reveal reveal-delay-3">
+      <div class="glass-card">
+        <h3 style="font-family:'Rajdhani',sans-serif;font-size:1rem;letter-spacing:1.5px;text-transform:uppercase;color:var(--blue-bright);margin-bottom:1rem;">Perfil corporativo</h3>
+        <ul class="styled-list">
+          <li>Empresa estadounidense de desarrollo de videojuegos y distribución digital de software de entretenimiento interactivo.</li>
+          <li>Fundada en <strong>1996</strong> por <strong>Gabe Newell y Mike Harrington</strong>, exempleados de Microsoft.</li>
+          <li>Con sede en <strong>Kirkland, Washington</strong> (originalmente Bellevue).</li>
+          <li>Modelo organizacional <strong>radicalmente horizontal</strong>, sin jerarquías formales ni cargos directivos tradicionales.</li>
+          <li>Ingresos estimados entre <strong>USD $4.000 y $5.000 millones anuales</strong>, principalmente a través de Steam.</li>
+        </ul>
+      </div>
+
+      <div class="glass-card">
+        <h3 style="font-family:'Rajdhani',sans-serif;font-size:1rem;letter-spacing:1.5px;text-transform:uppercase;color:var(--blue-bright);margin-bottom:1rem;">Portafolio principal</h3>
+        <div class="portfolio-block">
+          <h4>🎮 Steam — Distribución Digital</h4>
+          <p>Tienda de videojuegos para PC, biblioteca, logros, multijugador (Steam Workshop, Community) y herramientas para desarrolladores (Steamworks). Más de <strong>50.000 títulos</strong>.</p>
+        </div>
+        <div class="portfolio-block">
+          <h4>🖥️ Hardware</h4>
+          <p>Steam Deck (consola portátil con SteamOS), Valve Index (casco VR), Steam Controller/Link.</p>
+        </div>
+        <div class="portfolio-block">
+          <h4>⚙️ Infraestructura</h4>
+          <p>Servidores Steam, sistema antitrampas VAC, Steam Wallet con soporte regional.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="glass-card reveal reveal-delay-4" style="margin-top:1.5rem;">
+      <h3 style="font-family:'Rajdhani',sans-serif;font-size:1rem;letter-spacing:1.5px;text-transform:uppercase;color:var(--blue-bright);margin-bottom:1.2rem;">Necesidad, Dolor y Deseo que Suple</h3>
+      <div class="grid-3">
+        <div>
+          <p style="font-family:'Rajdhani',sans-serif;font-size:0.72rem;letter-spacing:2px;text-transform:uppercase;color:var(--gray);margin-bottom:0.5rem;">Necesidades funcionales</p>
+          <ul class="styled-list">
+            <li>Acceso centralizado a catálogo extenso sin múltiples plataformas o soportes físicos.</li>
+            <li>Gestión unificada de licencias y actualizaciones automáticas.</li>
+            <li>Infraestructura multijugador estable y global.</li>
+          </ul>
+        </div>
+        <div>
+          <p style="font-family:'Rajdhani',sans-serif;font-size:0.72rem;letter-spacing:2px;text-transform:uppercase;color:var(--gray);margin-bottom:0.5rem;">Dolores que resuelve</p>
+          <ul class="styled-list">
+            <li>Fragmentación del mercado: concentra el mayor catálogo en un solo ecosistema.</li>
+            <li>Piratería: canal legítimo con precios regionales competitivos.</li>
+            <li>Steam Direct: democratiza la distribución para desarrolladores indie.</li>
+          </ul>
+        </div>
+        <div>
+          <p style="font-family:'Rajdhani',sans-serif;font-size:0.72rem;letter-spacing:2px;text-transform:uppercase;color:var(--gray);margin-bottom:0.5rem;">Deseos que activa</p>
+          <ul class="styled-list">
+            <li>Coleccionismo digital y estatus social: perfiles, insignias y horas de juego.</li>
+            <li>Aspiración creativa: Steamworks alimenta el sueño de ser desarrollador indie.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════ MERCADO / COMPETIDORES ══════════════════ -->
+<section id="mercado">
+  <div class="section-inner">
+    <p class="sec-label reveal">02 — Clientes & Competencia</p>
+    <h2 class="sec-title reveal reveal-delay-1">Segmentos y <span>Posición competitiva</span></h2>
+    <div class="divider reveal reveal-delay-2"></div>
+
+    <div class="grid-2 reveal reveal-delay-2" style="margin-bottom:1.5rem;">
+      <div class="glass-card">
+        <h3 style="font-family:'Rajdhani',sans-serif;font-size:1rem;letter-spacing:1.5px;text-transform:uppercase;color:var(--blue-bright);margin-bottom:1rem;">A) Jugadores — B2C</h3>
+        <ul class="styled-list">
+          <li>Hombres y mujeres de <strong>16 a 35 años</strong>, mayoritariamente masculino (~70–75% globalmente).</li>
+          <li>Usuarios de PC con niveles de conocimiento técnico por encima del promedio.</li>
+          <li>Perfil LATAM: estudiantes universitarios o profesionales jóvenes de tecnología y creatividad.</li>
+          <li>Poder adquisitivo limitado que se compensa con <strong>sales estacionales</strong>.</li>
+          <li>Casual (2–5 horas semanales) y hardcore (20+ horas semanales), con alta lealtad a la plataforma.</li>
+        </ul>
+      </div>
+      <div class="glass-card">
+        <h3 style="font-family:'Rajdhani',sans-serif;font-size:1rem;letter-spacing:1.5px;text-transform:uppercase;color:var(--blue-bright);margin-bottom:1rem;">B) Desarrolladores — B2B</h3>
+        <ul class="styled-list">
+          <li>Estudios de videojuegos <strong>indie, medianos y grandes</strong> que utilizan Steamworks para publicar y monetizar.</li>
+          <li>Desarrolladores individuales o en dúo que ven Steam como el principal canal de distribución legítimo.</li>
+          <li>Condición de acceso: tarifa única de <strong>USD $100 por juego</strong> publicado vía Steam Direct.</li>
+        </ul>
+        <div style="margin-top:1.2rem;padding-top:1rem;border-top:1px solid var(--border);">
+          <p style="font-family:'Rajdhani',sans-serif;font-size:0.72rem;letter-spacing:2px;text-transform:uppercase;color:var(--gray);margin-bottom:0.5rem;">Cuota de mercado Steam</p>
+          <div class="bar-fill-wrap">
+            <div style="display:flex;justify-content:space-between;margin-bottom:0.3rem;">
+              <span style="font-size:0.82rem;color:rgba(232,244,255,0.7);">PC Gaming Digital</span>
+              <span style="font-family:'Orbitron',sans-serif;font-size:0.9rem;color:var(--blue-bright);">~75%</span>
+            </div>
+            <div class="bar-fill-track">
+              <div class="bar-fill-inner" data-width="75"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Competitors Table -->
+    <div class="glass-card reveal reveal-delay-3" style="overflow-x:auto;">
+      <h3 style="font-family:'Rajdhani',sans-serif;font-size:1rem;letter-spacing:1.5px;text-transform:uppercase;color:var(--blue-bright);margin-bottom:1.2rem;">Competidores directos e indirectos</h3>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Empresa</th>
+            <th>Modelo</th>
+            <th>Comisión</th>
+            <th>Diferenciador</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="highlight">
+            <td><strong>Steam (Valve)</strong></td>
+            <td>Tienda PC digital</td>
+            <td>30%</td>
+            <td>Mayor catálogo, comunidad</td>
+          </tr>
+          <tr>
+            <td>Epic Games Store</td>
+            <td>Tienda PC digital</td>
+            <td>12%</td>
+            <td>Exclusivas, motor UE5</td>
+          </tr>
+          <tr>
+            <td>GOG (CD Projekt)</td>
+            <td>Tienda PC digital</td>
+            <td>30%</td>
+            <td>DRM-free, catálogo retro</td>
+          </tr>
+          <tr>
+            <td>Xbox Game Pass</td>
+            <td>Suscripción</td>
+            <td>N/A</td>
+            <td>Precio plano mensual</td>
+          </tr>
+          <tr>
+            <td>PlayStation Store</td>
+            <td>Tienda consola</td>
+            <td>30%</td>
+            <td>Exclusivas Sony</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Market Share Chart -->
+    <div class="chart-wrap reveal reveal-delay-4" style="margin-top:1.5rem;">
+      <p class="chart-title">Cuota de mercado — Distribución Digital PC Gaming (estimado)</p>
+      <div style="max-width:380px;margin:0 auto;">
+        <canvas id="marketShareChart" height="280"></canvas>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════ PRECIOS ══════════════════ -->
+<section id="precios">
+  <div class="section-inner">
+    <p class="sec-label reveal">03 — Modelo de Precios</p>
+    <h2 class="sec-title reveal reveal-delay-1">Precios <span>& Modelo de Ingresos</span></h2>
+    <div class="divider reveal reveal-delay-2"></div>
+
+    <div class="grid-2 reveal reveal-delay-2">
+      <div class="glass-card" style="overflow-x:auto;">
+        <h3 style="font-family:'Rajdhani',sans-serif;font-size:1rem;letter-spacing:1.5px;text-transform:uppercase;color:var(--blue-bright);margin-bottom:1.2rem;">Precios de referencia — Mercado LATAM</h3>
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Producto / Servicio</th>
+              <th>USD aprox.</th>
+              <th>COP aprox.</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Juego AAA (Counter-Strike 2)</td>
+              <td>Gratis (F2P)</td>
+              <td>Gratis</td>
+            </tr>
+            <tr>
+              <td>Juego AAA típico (nuevo)</td>
+              <td>$39.99 – $69.99</td>
+              <td>$165.000 – $285.000</td>
+            </tr>
+            <tr>
+              <td>Juego indie (ej. Hollow Knight)</td>
+              <td>$14.99</td>
+              <td>$35.000 – $60.000</td>
+            </tr>
+            <tr>
+              <td>Steam Deck (OLED 1TB)</td>
+              <td>$649</td>
+              <td>No oficial LATAM</td>
+            </tr>
+            <tr>
+              <td>Valve Index (VR Kit)</td>
+              <td>$999</td>
+              <td>No oficial LATAM</td>
+            </tr>
+            <tr class="highlight">
+              <td>Steam durante sales (–75%)</td>
+              <td>$2.49 – $17.49</td>
+              <td>$10.000 – $70.000</td>
+            </tr>
+          </tbody>
+        </table>
+        <p style="font-size:0.75rem;color:var(--gray);margin-top:0.8rem;">Steam implementa <strong>Steam Regional Pricing</strong> con ajustes por región.</p>
+      </div>
+
+      <div class="glass-card">
+        <h3 style="font-family:'Rajdhani',sans-serif;font-size:1rem;letter-spacing:1.5px;text-transform:uppercase;color:var(--blue-bright);margin-bottom:1.2rem;">Fuentes de ingreso</h3>
+
+        <div class="revenue-item">
+          <span class="label">Comisión base sobre ventas en Steam</span>
+          <span class="value">30%</span>
+        </div>
+        <div style="margin-bottom:0.4rem;">
+          <div class="bar-fill-track"><div class="bar-fill-inner" data-width="100"></div></div>
+        </div>
+
+        <div class="revenue-item">
+          <span class="label">Comisión reducida (>USD $10M por título)</span>
+          <span class="value">25%</span>
+        </div>
+        <div style="margin-bottom:0.4rem;">
+          <div class="bar-fill-track"><div class="bar-fill-inner" data-width="83"></div></div>
+        </div>
+
+        <div class="revenue-item">
+          <span class="label">Comisión reducida (>USD $50M por título)</span>
+          <span class="value">20%</span>
+        </div>
+        <div style="margin-bottom:1rem;">
+          <div class="bar-fill-track"><div class="bar-fill-inner" data-width="67"></div></div>
+        </div>
+
+        <div class="revenue-item">
+          <span class="label">Marketplace de skins/objetos virtuales</span>
+          <span class="value">5–15%</span>
+        </div>
+        <div style="margin-bottom:0.4rem;">
+          <div class="bar-fill-track"><div class="bar-fill-inner" data-width="25"></div></div>
+        </div>
+
+        <div style="margin-top:1.2rem;padding:1rem;background:rgba(61,160,255,0.05);border-radius:8px;border:1px solid rgba(61,160,255,0.12);">
+          <p style="font-size:0.82rem;color:rgba(232,244,255,0.75);line-height:1.6;">
+            Adicionalmente: <strong>Hardware</strong> (Steam Deck, Valve Index) y <strong>Steam Wallet</strong> — fondos precargados que generan float financiero y reducen dependencia de pasarelas de pago externas.
+          </p>
+        </div>
+
+        <!-- Revenue Breakdown Chart -->
+        <div style="margin-top:1.5rem;">
+          <p class="chart-title">Estimado distribución de ingresos</p>
+          <canvas id="revenueChart" height="200"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════ PESTEL ══════════════════ -->
+<section id="pestel">
+  <div class="section-inner">
+    <p class="sec-label reveal">04 — Macroentorno</p>
+    <h2 class="sec-title reveal reveal-delay-1">Matriz <span>PESTEL</span></h2>
+    <div class="divider reveal reveal-delay-2"></div>
+    <p class="reveal reveal-delay-2" style="font-size:0.9rem;color:var(--gray);margin-bottom:2rem;max-width:620px;">Análisis de los factores macroentorno que condicionan la operación y estrategia de Valve Corporation, con énfasis en el mercado latinoamericano.</p>
+
+    <div class="pestel-grid reveal reveal-delay-3">
+      <div class="pestel-card">
+        <div class="pestel-letter">P</div>
+        <div class="pestel-name">Político</div>
+        <p class="pestel-text">Entorno regulatorio crecientemente exigente. La UE y varios gobiernos cuestionan su posición dominante. En China el acceso a Steam está restringido. Las leyes de clasificación (PEGI, ESRB) condicionan qué puede comercializarse. En LATAM, la ausencia de regulación específica representa un campo relativamente libre, aunque los debates sobre loot boxes avanzan.</p>
+        <div style="margin-top:0.8rem;">
+          <span class="tag">UE / Regulación</span>
+          <span class="tag red">China — Restricción</span>
+          <span class="tag">LATAM — Libre</span>
+        </div>
+      </div>
+
+      <div class="pestel-card">
+        <div class="pestel-letter">E</div>
+        <div class="pestel-name">Económico</div>
+        <p class="pestel-text">Modelo sólido: comisión del 30% genera márgenes elevados sin costos de producción propios. Epic Games, con comisión del 12%, presiona a los desarrolladores a diversificar plataformas. El hardware (Steam Deck) abre nueva fuente de ingresos. En LATAM, la volatilidad cambiaria afecta el poder adquisitivo, mitigada por precios regionales.</p>
+        <div style="margin-top:0.8rem;">
+          <span class="tag">Margen alto</span>
+          <span class="tag red">Presión Epic 12%</span>
+          <span class="tag">Precios regionales</span>
+        </div>
+      </div>
+
+      <div class="pestel-card">
+        <div class="pestel-letter">S</div>
+        <div class="pestel-name">Social</div>
+        <p class="pestel-text">El gaming ha dejado de ser un nicho para convertirse en entretenimiento masivo. La cultura gamer en LATAM crece aceleradamente, con mayor penetración en jóvenes de 15 a 30 años. Controversia por loot boxes y preocupación por adicción generan escrutinio. Crecimiento del segmento femenino representa oportunidad significativa.</p>
+        <div style="margin-top:0.8rem;">
+          <span class="tag">LATAM crece</span>
+          <span class="tag red">Loot boxes — Riesgo</span>
+          <span class="tag">Segmento femenino</span>
+        </div>
+      </div>
+
+      <div class="pestel-card">
+        <div class="pestel-letter">T</div>
+        <div class="pestel-name">Tecnológico</div>
+        <p class="pestel-text">Apuestas técnicas distintivas: Proton (compatibilidad Linux), Steam Deck y Valve Index (VR). La amenaza más relevante es el cloud gaming, que podría reducir la dependencia del hardware local. La inteligencia artificial para recomendación de títulos y detección de fraude representa tanto oportunidad como inversión necesaria.</p>
+        <div style="margin-top:0.8rem;">
+          <span class="tag">Proton / Linux</span>
+          <span class="tag">VR — Valve Index</span>
+          <span class="tag red">Cloud Gaming</span>
+        </div>
+      </div>
+
+      <div class="pestel-card">
+        <div class="pestel-letter" style="font-size:1.6rem;">Ec</div>
+        <div class="pestel-name">Ecológico</div>
+        <p class="pestel-text">Factor de menor presión inmediata. El consumo energético de los servidores a escala global y la gestión de residuos electrónicos del hardware (Steam Deck, Valve Index) tienen creciente atención regulatoria en Europa y California. La distribución digital es intrínsecamente más sostenible que el soporte físico, lo que constituye una ventaja comunicacional.</p>
+        <div style="margin-top:0.8rem;">
+          <span class="tag">Digital &gt; Físico</span>
+          <span class="tag red">Residuos electrónicos</span>
+        </div>
+      </div>
+
+      <div class="pestel-card">
+        <div class="pestel-letter">L</div>
+        <div class="pestel-name">Legal</div>
+        <p class="pestel-text">El frente más delicado. La Ley de Mercados Digitales (DMA) europea obliga a plataformas dominantes a abrir su ecosistema, afectando directamente el modelo de tienda cerrada. Investigaciones antimonopolio en UE y Australia, junto con litigios sobre loot boxes en Bélgica y Países Bajos, representan el mayor riesgo regulatorio.</p>
+        <div style="margin-top:0.8rem;">
+          <span class="tag red">DMA — UE</span>
+          <span class="tag red">Antimonopolio</span>
+          <span class="tag">LATAM — Rezagado</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════ BUYER PERSONA ══════════════════ -->
+<section id="persona">
+  <div class="section-inner">
+    <p class="sec-label reveal">05 — Buyer Persona</p>
+    <h2 class="sec-title reveal reveal-delay-1">Usuario tipo Steam <span>en LATAM</span></h2>
+    <div class="divider reveal reveal-delay-2"></div>
+
+    <div class="persona-card reveal reveal-delay-3">
+      <div class="persona-header">
+        <div class="persona-avatar">AC</div>
+        <div class="persona-name-block">
+          <h3>Alejandro Castro</h3>
+          <p>Buyer Persona — Steam LATAM</p>
+        </div>
+      </div>
+      <div class="persona-body">
+        <div class="persona-row">
+          <label>Perfil</label>
+          <span>Hombre joven, 18–30 años. Formación universitaria en carreras tecnológicas o creativas. Segmento mayoritariamente masculino (~75%) en LATAM, con crecimiento del segmento femenino.</span>
+        </div>
+        <div class="persona-row">
+          <label>Edad central</label>
+          <span>24 años</span>
+        </div>
+        <div class="persona-row">
+          <label>Ocupación</label>
+          <span>Trabaja en tecnología o estudia mientras hace freelance creativo o de desarrollo.</span>
+        </div>
+        <div class="persona-row">
+          <label>Poder adquisitivo</label>
+          <span>Limitado por el tipo de cambio peso/dólar. Los sales de Steam son su principal momento de compra activo del año.</span>
+        </div>
+        <div class="persona-row">
+          <label>Motivaciones</label>
+          <span>Acceso a biblioteca enorme con precios regionales. Aspiración de publicar su propio juego en Steamworks como desarrollador independiente.</span>
+        </div>
+        <div class="persona-row">
+          <label>Puntos de dolor</label>
+          <span>Tipo de cambio (fricción #1). Soporte al cliente de Valve casi inexistente. Comisión del 30% percibida como alta frente a Epic Games Store.</span>
+        </div>
+        <div class="persona-row">
+          <label>Canales digitales</label>
+          <span>
+            <span class="tag">YouTube</span>
+            <span class="tag">Discord</span>
+            <span class="tag">Twitch</span>
+          </span>
+        </div>
+        <div class="persona-row">
+          <label>Contenido preferido</label>
+          <span>Reviews largos, devlogs, comparativas de hardware. Prioriza autenticidad sobre publicidad.</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Strategic implications -->
+    <div class="glass-card reveal reveal-delay-4" style="margin-top:1.5rem;">
+      <h3 style="font-family:'Rajdhani',sans-serif;font-size:1rem;letter-spacing:1.5px;text-transform:uppercase;color:var(--blue-bright);margin-bottom:1.2rem;">Implicaciones estratégicas del Buyer Persona</h3>
+      <div class="grid-2">
+        <ul class="styled-list">
+          <li>Mantener y comunicar activamente los <strong>precios regionales</strong> como principal argumento de valor frente a la piratería y competidores.</li>
+          <li>Invertir en canales de <strong>soporte al cliente en español</strong> para reducir la fricción más reportada.</li>
+        </ul>
+        <ul class="styled-list">
+          <li>Fortalecer el ecosistema Steamworks con <strong>documentación y comunidades en español</strong> para atraer al segmento aspiracional de desarrolladores indie.</li>
+          <li>Aprovechar <strong>YouTube y Discord</strong> como canales principales para campañas de awareness del hardware Steam Deck.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════ CONCLUSIONES ══════════════════ -->
+<section id="conclusiones">
+  <div class="section-inner">
+    <p class="sec-label reveal">06 — Conclusiones</p>
+    <h2 class="sec-title reveal reveal-delay-1">Síntesis del <span>Análisis</span></h2>
+    <div class="divider reveal reveal-delay-2"></div>
+
+    <div style="display:flex;flex-direction:column;gap:1rem;" class="reveal reveal-delay-3">
+      <div class="conclusion-card">
+        <div class="conclusion-num">01</div>
+        <div class="conclusion-text">
+          <h4>Dominio estructural en PC Gaming</h4>
+          <p>Steam mantiene una cuota estimada del 75% en distribución digital de PC gaming. Su ventaja competitiva principal es el <strong>efecto red</strong>: a más jugadores, más desarrolladores publican; a más juegos disponibles, más jugadores se suman, creando un ecosistema difícil de desplazar.</p>
+        </div>
+      </div>
+      <div class="conclusion-card">
+        <div class="conclusion-num">02</div>
+        <div class="conclusion-text">
+          <h4>Modelo organizacional único y sus implicaciones</h4>
+          <p>La estructura horizontal sin jerarquías formales, combinada con ingresos de $4.000–$5.000 millones con solo ~360–400 empleados, posiciona a Valve como una de las empresas con mayor ingreso por empleado en la industria tecnológica.</p>
+        </div>
+      </div>
+      <div class="conclusion-card">
+        <div class="conclusion-num">03</div>
+        <div class="conclusion-text">
+          <h4>Principal amenaza: Epic Games Store y el entorno regulatorio</h4>
+          <p>Epic Games, con su comisión del 12%, presiona tanto a desarrolladores como el argumento de valor de Steam. Paralelamente, la DMA europea y las investigaciones antimonopolio representan el mayor riesgo regulatorio a mediano plazo para el modelo de tienda cerrada.</p>
+        </div>
+      </div>
+      <div class="conclusion-card">
+        <div class="conclusion-num">04</div>
+        <div class="conclusion-text">
+          <h4>Oportunidad estratégica en LATAM</h4>
+          <p>El usuario tipo LATAM (Alejandro Castro, 24 años) demuestra alta lealtad a la plataforma pero enfrenta fricciones concretas: tipo de cambio y ausencia de soporte en español. El mercado regional crece aceleradamente con oportunidades en hardware y comunidades de desarrolladores indie.</p>
+        </div>
+      </div>
+      <div class="conclusion-card">
+        <div class="conclusion-num">05</div>
+        <div class="conclusion-text">
+          <h4>Diversificación hacia hardware como pilar futuro</h4>
+          <p>Steam Deck y Valve Index representan una apuesta estratégica para reducir la dependencia exclusiva de las comisiones de ventas digitales y contrarrestar la amenaza del cloud gaming, que podría erosionar la centralidad de Steam como tienda.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <p>Análisis elaborado — Primera Entrega &nbsp;·&nbsp; Valve Corporation / Steam &nbsp;·&nbsp; Estructura · Entorno · Mercado · PESTEL · Buyer Persona</p>
+</footer>
+
+<!-- ══════════════════ SCRIPTS ══════════════════ -->
+<script>
+// ── PARTICLES ──
+(function () {
+  const canvas = document.getElementById('particles-canvas');
+  const ctx = canvas.getContext('2d');
+  let W, H, particles = [];
+
+  function resize() {
+    W = canvas.width = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+  }
+
+  resize();
+  window.addEventListener('resize', resize);
+
+  function rand(a, b) { return Math.random() * (b - a) + a; }
+
+  function Particle() {
+    this.reset();
+  }
+
+  Particle.prototype.reset = function () {
+    this.x = rand(0, W);
+    this.y = rand(0, H);
+    this.r = rand(0.5, 2.2);
+    this.vx = rand(-0.25, 0.25);
+    this.vy = rand(-0.5, -0.1);
+    this.alpha = rand(0.1, 0.55);
+    this.color = Math.random() > 0.85 ? '#C7263E' : '#3DA0FF';
+  };
+
+  Particle.prototype.update = function () {
+    this.x += this.vx;
+    this.y += this.vy;
+    if (this.y < -4) this.reset();
+    if (this.x < 0 || this.x > W) this.vx *= -1;
+  };
+
+  for (let i = 0; i < 90; i++) particles.push(new Particle());
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+    particles.forEach(p => {
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fillStyle = p.color;
+      ctx.globalAlpha = p.alpha;
+      ctx.fill();
+      p.update();
+    });
+    ctx.globalAlpha = 1;
+    requestAnimationFrame(draw);
+  }
+
+  draw();
+})();
+
+// ── SCROLL REVEAL ──
+(function () {
+  const els = document.querySelectorAll('.reveal');
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.classList.add('visible');
+        io.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.1 });
+  els.forEach(el => io.observe(el));
+})();
+
+// ── COUNTERS ──
+(function () {
+  const counters = document.querySelectorAll('[data-target]');
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        const el = e.target;
+        const target = +el.dataset.target;
+        const prefix = el.dataset.prefix || '';
+        const suffix = el.dataset.suffix || '';
+        const dur = 1600;
+        const step = 16;
+        const inc = target / (dur / step);
+        let cur = 0;
+        const timer = setInterval(() => {
+          cur += inc;
+          if (cur >= target) { cur = target; clearInterval(timer); }
+          el.textContent = prefix + (Number.isInteger(target) ? Math.round(cur) : cur.toFixed(1)) + suffix;
+        }, step);
+        io.unobserve(el);
+      }
+    });
+  }, { threshold: 0.5 });
+  counters.forEach(el => io.observe(el));
+})();
+
+// ── BAR FILLS ──
+(function () {
+  const bars = document.querySelectorAll('.bar-fill-inner');
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.style.width = e.target.dataset.width + '%';
+        io.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.3 });
+  bars.forEach(b => io.observe(b));
+})();
+
+// ── ACTIVE NAV ──
+(function () {
+  const sections = document.querySelectorAll('section');
+  const links = document.querySelectorAll('.nav-links a');
+
+  window.addEventListener('scroll', () => {
+    let current = '';
+    sections.forEach(s => {
+      if (window.scrollY >= s.offsetTop - 80) current = s.id;
+    });
+    links.forEach(a => {
+      a.classList.toggle('active', a.getAttribute('href') === '#' + current);
+    });
+  });
+})();
+
+// ── CHARTS ──
+document.addEventListener('DOMContentLoaded', function () {
+  Chart.defaults.color = '#8dafc8';
+  Chart.defaults.font.family = "'Rajdhani', sans-serif";
+
+  // Market Share Doughnut
+  const ctxPie = document.getElementById('marketShareChart').getContext('2d');
+  new Chart(ctxPie, {
+    type: 'doughnut',
+    data: {
+      labels: ['Steam (Valve)', 'Epic Games Store', 'GOG', 'Otros'],
+      datasets: [{
+        data: [75, 13, 5, 7],
+        backgroundColor: [
+          'rgba(61,160,255,0.85)',
+          'rgba(199,38,62,0.75)',
+          'rgba(30,111,196,0.6)',
+          'rgba(141,175,200,0.4)',
+        ],
+        borderColor: ['#3DA0FF', '#C7263E', '#1e6fc4', '#8dafc8'],
+        borderWidth: 1.5,
+        hoverOffset: 8,
+      }]
+    },
+    options: {
+      responsive: true,
+      cutout: '65%',
+      plugins: {
+        legend: {
+          position: 'bottom',
+          labels: { color: '#8dafc8', padding: 14, font: { size: 12, family: "'Rajdhani', sans-serif" } }
+        },
+        tooltip: {
+          callbacks: {
+            label: (ctx) => ` ${ctx.label}: ${ctx.parsed}%`
+          }
+        }
+      },
+      animation: { animateRotate: true, duration: 1200 }
+    }
+  });
+
+  // Revenue Bar Chart
+  const ctxRev = document.getElementById('revenueChart').getContext('2d');
+  new Chart(ctxRev, {
+    type: 'bar',
+    data: {
+      labels: ['Ventas Steam', 'Marketplace Skins', 'Steam Deck', 'Valve Index', 'Steam Wallet'],
+      datasets: [{
+        label: 'Relevancia de ingresos (escala relativa)',
+        data: [85, 35, 30, 10, 20],
+        backgroundColor: [
+          'rgba(61,160,255,0.7)',
+          'rgba(61,160,255,0.5)',
+          'rgba(61,160,255,0.45)',
+          'rgba(199,38,62,0.5)',
+          'rgba(30,111,196,0.5)',
+        ],
+        borderColor: ['#3DA0FF','#3DA0FF','#3DA0FF','#C7263E','#1e6fc4'],
+        borderWidth: 1.5,
+        borderRadius: 5,
+      }]
+    },
+    options: {
+      responsive: true,
+      indexAxis: 'y',
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { label: (ctx) => ` Índice relativo: ${ctx.parsed.x}` } }
+      },
+      scales: {
+        x: {
+          grid: { color: 'rgba(61,160,255,0.08)' },
+          ticks: { display: false },
+          border: { display: false }
+        },
+        y: {
+          grid: { display: false },
+          ticks: { color: '#8dafc8', font: { size: 11 } },
+          border: { display: false }
+        }
+      },
+      animation: { duration: 1200 }
+    }
+  });
+});
+</script>
+</body>
+</html>
